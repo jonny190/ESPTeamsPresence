@@ -25,6 +25,7 @@
 
 // Global settings
 // #define NUMLEDS 16							// Number of LEDs on the strip (if not set via build flags)
+// #define BRIGHTLEDS 128						// Brightness of LEDs on the strip (if not set via build flags)
 // #define DATAPIN 26							// GPIO pin used to drive the LED strip (20 == GPIO/D13) (if not set via build flags)
 // #define DISABLECERTCHECK 1					// Uncomment to disable https certificate checks (if not set via build flags)
 // #define STATUS_PIN LED_BUILTIN				// User builtin LED for status (if not set via build flags)
@@ -622,7 +623,7 @@ void setup()
 	brightLeds = atoi(paramBrightLedsValue);
 	if (brightLeds < 1) {
 		DBG_PRINTLN(F("Brightness of LEDs not given, using 128."));
-		brightLeds = BRIGHTLEDS;
+		brightLeds = 128;
 	}
 	ws2812fx.setCustomShow(customShow);
 
