@@ -1,8 +1,8 @@
 # ESP32 Teams Presence Light
 
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
-![](https://github.com/toblum/ESPTeamsPresence/workflows/BuildAndRelease/badge.svg)
-![](https://img.shields.io/github/v/release/toblum/ESPTeamsPresence)
+![](https://github.com/jonny190/ESPTeamsPresence/workflows/BuildAndRelease/badge.svg)
+![](https://img.shields.io/github/v/release/jonny190/ESPTeamsPresence)
 
 
 **A standalone Microsoft Teams presence light based on ESP32 and RGB neopixel LEDs.**
