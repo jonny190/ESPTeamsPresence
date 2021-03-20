@@ -60,12 +60,17 @@ boolean requestJsonApi(JsonDocument& doc, String url, String payload = "", size_
 			// Just for debugging purposes:
 			// if (url.indexOf("presence") > 0) {
 			// 	Serial.println(client->readString());
-			// }
+			 // }
 
 			// File found at server (HTTP 200, 301), or HTTP 400 with response payload
 			if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY || httpCode == HTTP_CODE_BAD_REQUEST) {
+				String Myanswer = client->readString();
+				int firstOpeningBracket = Myanswer.indexOf('{');
+				int lastClosingBracket = Myanswer.lastIndexOf('}');
+				String Mycopy = Myanswer.substring (firstOpeningBracket ,lastClosingBracket +1);
 				// Parse JSON data
-				DeserializationError error = deserializeJson(doc, *client);
+				//DeserializationError error = deserializeJson(doc, *client);
+				DeserializationError error = deserializeJson(doc, Mycopy);
 				client->stop();
 				delete client;
 				client = NULL;
@@ -173,6 +178,7 @@ void handleRoot() {
 	s += "<div class=\"nes-field mt-s\"><label for=\"name_field\">Tenant hostname / ID</label><input type=\"text\" id=\"name_field\" class=\"nes-input\" disabled value=\"" + String(paramTenantValue) +  "\"></div>";
 	s += "<div class=\"nes-field mt-s\"><label for=\"name_field\">Polling interval (sec)</label><input type=\"text\" id=\"name_field\" class=\"nes-input\" disabled value=\"" + String(paramPollIntervalValue) +  "\"></div>";
 	s += "<div class=\"nes-field mt-s\"><label for=\"name_field\">Number of LEDs</label><input type=\"text\" id=\"name_field\" class=\"nes-input\" disabled value=\"" + String(paramNumLedsValue) +  "\"></div>";
+	s += "<div class=\"nes-field mt-s\"><label for=\"name_field\">Brightness of LEDs</label><input type=\"text\" id=\"name_field\" class=\"nes-input\" disabled value=\"" + String(paramBrightLedsValue) +  "\"></div>";
 	s += "</section>";
 
 	s += "<section class=\"nes-container with-title mt\"><h3 class=\"title\">Memory usage</h3>";
@@ -210,6 +216,7 @@ void handleGetSettings() {
 	responseDoc["tenant"].set(paramTenantValue);
 	responseDoc["poll_interval"].set(paramPollIntervalValue);
 	responseDoc["num_leds"].set(paramNumLedsValue);
+	responseDoc["Bright_leds"].set(paramBrightLedsValue);
 
 	responseDoc["heap"].set(ESP.getFreeHeap());
 	responseDoc["min_heap"].set(ESP.getMinFreeHeap());
@@ -272,6 +279,13 @@ boolean formValidator() {
 		valid = false;
 	}
 
+	int l5 = server.arg(paramBrightLeds.getId()).length();
+	if (l5 < 1)
+	{
+		paramBrightLeds.errorMessage = "Please provide a value for the Brightness of LEDs!";
+		valid = false;
+	}
+
 	return valid;
 }
 
@@ -279,6 +293,7 @@ boolean formValidator() {
 void onConfigSaved() {
 	DBG_PRINTLN(F("Configuration was updated."));
 	ws2812fx.setLength(atoi(paramNumLedsValue));
+	ws2812fx.setBrightness(atoi(paramBrightLedsValue));
 }
 
 // Requests to /startDevicelogin

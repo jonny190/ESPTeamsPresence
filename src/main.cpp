@@ -32,7 +32,7 @@
 #define DEFAULT_ERROR_RETRY_INTERVAL 30			// Default interval to try again after errors
 #define TOKEN_REFRESH_TIMEOUT 60	 			// Number of seconds until expiration before token gets refreshed
 #define CONTEXT_FILE "/context.json"			// Filename of the context file
-#define VERSION "0.17.0"						// Version of the software
+#define VERSION "0.18.0"						// Version of the software
 
 #define DBG_PRINT(x) Serial.print(x)
 #define DBG_PRINTLN(x) Serial.println(x)
@@ -119,11 +119,13 @@ char paramClientIdValue[STRING_LEN];
 char paramTenantValue[STRING_LEN];
 char paramPollIntervalValue[INTEGER_LEN];
 char paramNumLedsValue[INTEGER_LEN];
+char paramBrightLedsValue[INTEGER_LEN];
 IotWebConfSeparator separator = IotWebConfSeparator();
 IotWebConfParameter paramClientId = IotWebConfParameter("Client-ID (Generic ID: 3837bbf0-30fb-47ad-bce8-f460ba9880c3)", "clientId", paramClientIdValue, STRING_LEN, "text", "e.g. 3837bbf0-30fb-47ad-bce8-f460ba9880c3", "3837bbf0-30fb-47ad-bce8-f460ba9880c3");
 IotWebConfParameter paramTenant = IotWebConfParameter("Tenant hostname / ID", "tenantId", paramTenantValue, STRING_LEN, "text", "e.g. contoso.onmicrosoft.com");
 IotWebConfParameter paramPollInterval = IotWebConfParameter("Presence polling interval (sec) (default: 30)", "pollInterval", paramPollIntervalValue, INTEGER_LEN, "number", "10..300", DEFAULT_POLLING_PRESENCE_INTERVAL, "min='10' max='300' step='5'");
 IotWebConfParameter paramNumLeds = IotWebConfParameter("Number of LEDs (default: 16)", "numLeds", paramNumLedsValue, INTEGER_LEN, "number", "1..500", "16", "min='1' max='500' step='1'");
+IotWebConfParameter paramBrightLeds = IotWebConfParameter("Brightness of LEDs (default: 128)", "brightLeds", paramBrightLedsValue, INTEGER_LEN, "number", "1-128", "16", "min='1' max='500' step='1'");
 byte lastIotWebConfState;
 
 // HTTP client
@@ -132,6 +134,7 @@ WiFiClientSecure client;
 // WS2812FX
 WS2812FX ws2812fx = WS2812FX(NUMLEDS, DATAPIN, NEO_GRB + NEO_KHZ800);
 int numberLeds;
+int brightLeds;
 
 // OTA update
 HTTPUpdateServer httpUpdater;
@@ -583,6 +586,7 @@ void setup()
 
 	// WS2812FX
 	ws2812fx.init();
+	ws2812fx.setBrightness(128);
 	rmt_tx_int(RMT_CHANNEL_0, ws2812fx.getPin());
 	ws2812fx.start();
 	setAnimation(0, FX_MODE_STATIC, WHITE);
@@ -597,6 +601,7 @@ void setup()
 	iotWebConf.addParameter(&paramTenant);
 	iotWebConf.addParameter(&paramPollInterval);
 	iotWebConf.addParameter(&paramNumLeds);
+	iotWebConf.addParameter(&paramBrightLeds);
 	// iotWebConf.setFormValidator(&formValidator);
 	// iotWebConf.getApTimeoutParameter()->visible = true;
 	// iotWebConf.getApTimeoutParameter()->defaultValue = "10";
@@ -613,6 +618,12 @@ void setup()
 		numberLeds = NUMLEDS;
 	}
 	ws2812fx.setLength(numberLeds);
+
+	brightLeds = atoi(paramBrightLedsValue);
+	if (brightLeds < 1) {
+		DBG_PRINTLN(F("Brightness of LEDs not given, using 128."));
+		brightLeds = BRIGHTLEDS;
+	}
 	ws2812fx.setCustomShow(customShow);
 
 	// HTTP server - Set up required URL handlers on the web server.
